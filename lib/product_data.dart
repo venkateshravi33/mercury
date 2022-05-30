@@ -144,7 +144,7 @@ List productData = [
     "productUrl": "https://store.insta360.com/product/one_x2?c=1164",
     "productName": "Insta360 ONE X2",
     "productDescription": "Standalone 360 degree pocket camera.",
-    "currency": "￡",
+    "currency": "£",
     "priceBig": "429",
     "priceSmall": ".99",
     "shipping": "",

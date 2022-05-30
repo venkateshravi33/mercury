@@ -14,29 +14,31 @@ class BuyPage extends StatefulWidget {
 
 class _BuyPageState extends State<BuyPage> {
   late WebViewController myWebViewController;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.black),
-        backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.chevron_left_rounded,
+            color: Colors.white,
+            size: 30,
+          ),
+          onPressed: () => Navigator.of(context).pop(false),
+        ),
+        backgroundColor: Colors.black,
         title: Text(
           widget.productName,
-          style: const TextStyle(fontSize: 20, color: Colors.black),
+          style: const TextStyle(fontSize: 20, color: Colors.white),
         ),
       ),
-      body: WillPopScope(
-        onWillPop: () async {
-          Navigator.pop(context, false);
-          return false;
+      body: WebView(
+        javascriptMode: JavascriptMode.unrestricted,
+        initialUrl: widget.productUrl,
+        onWebViewCreated: (controller) {
+          myWebViewController = controller;
         },
-        child: WebView(
-          javascriptMode: JavascriptMode.unrestricted,
-          initialUrl: widget.productUrl,
-          onWebViewCreated: (controller) {
-            myWebViewController = controller;
-          },
-        ),
       ),
     );
   }

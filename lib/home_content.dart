@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'product_data.dart';
 import 'buy_page.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class HomeContent extends StatefulWidget {
   final int index;
@@ -63,7 +64,7 @@ class _HomeContentState extends State<HomeContent> {
     _isSaved = widget.isSaved;
     _videoController = VideoPlayerController.asset(widget.videoUrl);
     _videoController.initialize().then((value) {
-      _videoController.play();
+      // _videoController.play();
       _videoController.setLooping(true);
       setState(() {
         isShowPlaying = false;
@@ -81,19 +82,29 @@ class _HomeContentState extends State<HomeContent> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        /// The video player.
-        videoPlayer(),
+    return VisibilityDetector(
+      onVisibilityChanged: (VisibilityInfo info) {
+        if (info.visibleFraction == 1) {
+          _videoController.play();
+        } else if (info.visibleFraction == 0) {
+          _videoController.pause();
+        }
+      },
+      key: const Key('unique key'),
+      child: Stack(
+        children: [
+          /// The video player.
+          videoPlayer(),
 
-        /// Shadow layer to improve bottom text visibility.
-        shadowLayer(),
+          /// Shadow layer to improve bottom text visibility.
+          shadowLayer(),
 
-        /// The overlay that displays all the product info.
-        informationOverlay(),
+          /// The overlay that displays all the product info.
+          informationOverlay(),
 
-        playPauseIcon(),
-      ],
+          playPauseIcon(),
+        ],
+      ),
     );
   }
 
@@ -138,12 +149,10 @@ class _HomeContentState extends State<HomeContent> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ///1. Top Bar (ratio : 1).
+        ///1. Top Bar (ratio : 1) - place holder.
         Expanded(
           flex: 1,
-          child: Container(
-              // color: Colors.pink,
-              ),
+          child: Container(),
         ),
 
         ///2. Middle Cluster (ratio : 10) - Main Panel, Ratings Tab. (10 : 2)
@@ -152,7 +161,7 @@ class _HomeContentState extends State<HomeContent> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ///2.1 Main Panel (ratio : 10) - Tap Area, Info Panel (10 : 2).
+              ///2.1 Main Panel (ratio : 10) - Tap Area, Product name & description Panel (10 : 2).
               Expanded(
                 flex: 10,
                 child: Column(
@@ -160,7 +169,7 @@ class _HomeContentState extends State<HomeContent> {
                   children: [
                     ///2.1.1 Tap Area (ratio : 10).
                     Expanded(
-                      flex: 10,
+                      flex: 20,
                       child: Container(
                         // color: Colors.red,
                         child: GestureDetector(
@@ -175,7 +184,7 @@ class _HomeContentState extends State<HomeContent> {
                                   : showPlayPauseIcon = true;
                             });
                             Future.delayed(
-                              const Duration(milliseconds: 1000),
+                              const Duration(milliseconds: 800),
                               () {
                                 setState(
                                   () {
@@ -188,15 +197,7 @@ class _HomeContentState extends State<HomeContent> {
 
                           /// Double tap - Like/Unlike Video.
                           onDoubleTap: () {
-                            if (_isLiked) {
-                              setState(() {
-                                /// Local variable is updated.
-                                _isLiked = false;
-
-                                /// The change is also made in the product data list by directly accessing it.
-                                productData[widget.index]['isLiked'] = false;
-                              });
-                            } else {
+                            if (!_isLiked) {
                               setState(() {
                                 /// Local variable is updated.
                                 _isLiked = true;
@@ -210,36 +211,37 @@ class _HomeContentState extends State<HomeContent> {
                       ),
                     ),
 
-                    ///2.1.2 Info Panel (ratio : 2).
+                    ///2.1.2 Product name & description Panel (ratio : 2).
                     Expanded(
                       flex: 2,
-                      child: Container(
-                        // color: Colors.orange,
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 8),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(
-                                widget.productName,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            /// Product Name.
+                            Text(
+                              widget.productName,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
-                              const SizedBox(height: 5),
-                              Text(
-                                widget.productDescription,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.normal,
-                                  color: Colors.white,
-                                ),
+                            ),
+                            const SizedBox(height: 5),
+
+                            /// Product Description.
+                            Text(
+                              widget.productDescription,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.white,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -250,243 +252,190 @@ class _HomeContentState extends State<HomeContent> {
               ///2.2 Ratings Tab (ratio : 2).
               Expanded(
                 flex: 2,
-                child: Container(
-                  // color: Colors.blue,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      /// Like button tap area - single tap to like.
-                      GestureDetector(
-                        onTap: () {
-                          if (_isLiked) {
-                            setState(() {
-                              /// Local variable is updated.
-                              _isLiked = false;
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    /// 1. Like button tap area - single tap to like.
+                    GestureDetector(
+                      onTap: () {
+                        if (_isLiked) {
+                          setState(() {
+                            /// Local variable is updated.
+                            _isLiked = false;
 
-                              /// The change is also made in the product data list by directly accessing it.
-                              productData[widget.index]['isLiked'] = false;
-                            });
-                          } else {
-                            setState(() {
-                              /// Local variable is updated.
-                              _isLiked = true;
+                            /// The change is also made in the product data list by directly accessing it.
+                            productData[widget.index]['isLiked'] = false;
+                          });
+                        } else {
+                          setState(() {
+                            /// Local variable is updated.
+                            _isLiked = true;
 
-                              /// The change is also made in the product data list by directly accessing it.
-                              productData[widget.index]['isLiked'] = true;
-                            });
-                          }
-                        },
-                        child: _isLiked
-                            ? const Icon(
-                                Icons.favorite_rounded,
-                                size: 35,
-                                color: Colors.red,
-                              )
-                            : const Icon(
-                                Icons.favorite_border_rounded,
-                                // Icons.favorite_rounded,
-                                size: 35,
-                                color: Colors.white,
-                                // color: Colors.pink,
-                              ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        widget.likes,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      /// Save button tap area - single tap to save.
-                      GestureDetector(
-                        onTap: () {
-                          if (_isSaved) {
-                            setState(() {
-                              /// Local variable is updated.
-                              _isSaved = false;
-
-                              /// The change is also made in the product data list by directly accessing it.
-                              productData[widget.index]['isSaved'] = false;
-                            });
-                          } else {
-                            setState(() {
-                              /// Local variable is updated.
-                              _isSaved = true;
-
-                              /// The change is also made in the product data list by directly accessing it.
-                              productData[widget.index]['isSaved'] = true;
-                            });
-                          }
-                        },
-                        child: _isSaved
-                            ? const Icon(
-                                Icons.bookmark_rounded,
-                                size: 35,
-                                color: Colors.white,
-                              )
-                            : const Icon(
-                                Icons.bookmark_border_rounded,
-                                size: 35,
-                                color: Colors.white,
-                              ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        widget.saves,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      const Icon(
-                        Icons.share_rounded,
-                        size: 35,
+                            /// The change is also made in the product data list by directly accessing it.
+                            productData[widget.index]['isLiked'] = true;
+                          });
+                        }
+                      },
+                      child: _isLiked
+                          ? const Icon(
+                              Icons.favorite_rounded,
+                              size: 35,
+                              color: Colors.red,
+                            )
+                          : const Icon(
+                              Icons.favorite_border_rounded,
+                              // Icons.favorite_rounded,
+                              size: 35,
+                              color: Colors.white,
+                              // color: Colors.pink,
+                            ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      widget.likes,
+                      style: const TextStyle(
                         color: Colors.white,
+                        fontSize: 13,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        widget.shares,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      const Icon(
-                        Icons.more_horiz_rounded,
-                        size: 35,
+                    ),
+                    const SizedBox(height: 20),
+
+                    /// 2. Save button tap area - single tap to save.
+                    GestureDetector(
+                      onTap: () {
+                        if (_isSaved) {
+                          setState(() {
+                            /// Local variable is updated.
+                            _isSaved = false;
+
+                            /// The change is also made in the product data list by directly accessing it.
+                            productData[widget.index]['isSaved'] = false;
+                          });
+                        } else {
+                          setState(() {
+                            /// Local variable is updated.
+                            _isSaved = true;
+
+                            /// The change is also made in the product data list by directly accessing it.
+                            productData[widget.index]['isSaved'] = true;
+                          });
+                        }
+                      },
+                      child: _isSaved
+                          ? const Icon(
+                              Icons.bookmark_rounded,
+                              size: 35,
+                              color: Colors.white,
+                            )
+                          : const Icon(
+                              Icons.bookmark_border_rounded,
+                              size: 35,
+                              color: Colors.white,
+                            ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      widget.saves,
+                      style: const TextStyle(
                         color: Colors.white,
+                        fontSize: 13,
                       ),
-                      const SizedBox(height: 10),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    //TODO: 3. Implement Share button tap area - single tap to share.
+                    const Icon(
+                      Icons.share_rounded,
+                      size: 35,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      widget.shares,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    //TODO: 4. Implement Options button tap area - single tap to open options.
+                    const Icon(
+                      Icons.more_horiz_rounded,
+                      size: 35,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(height: 10),
+                  ],
                 ),
               ),
             ],
           ),
         ),
 
-        ///3. Bottom Bar (ratio : 1) - Price Info, Buy Button. (4 : 2)
+        ///3. Bottom Bar (ratio : 1) - Buy button with price.
         Expanded(
           flex: 1,
-          child: Container(
-            // color: Colors.purple,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ///3.1 Price Info (ratio : 4).
-                Expanded(
-                  flex: 4,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              widget.currency,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white,
-                              ),
-                            ),
-                            Text(
-                              widget.priceBig,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white,
-                              ),
-                            ),
-                            Text(
-                              widget.priceSmall,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              widget.shipping,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          widget.taxes,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.normal,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+          child: Padding(
+            padding:
+                const EdgeInsets.only(left: 8, right: 8, top: 5, bottom: 5),
+            child: ElevatedButton(
+              onPressed: () {
+                /// Video is paused on button press.
+                _videoController.pause();
 
-                ///3.2 Buy Button (ratio : 2).
-                Expanded(
-                  flex: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                        left: 8, right: 8, top: 8, bottom: 8),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        _videoController.pause();
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => BuyPage(
-                              productUrl: widget.productUrl,
-                              productName: widget.productName,
-                            ),
-                          ),
-                        ).then(
-                          (val) {
-                            if (val == false) {
-                              _videoController.play();
-                            }
-                          },
-                        );
-                      },
-                      child: const Text(
-                        'Buy',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      style: ButtonStyle(
-                        shape: MaterialStateProperty.all(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
-                        backgroundColor: MaterialStateProperty.all(
-                          Colors.blue,
-                          // Colors.white.withOpacity(0.4),
-                        ),
-                      ),
+                /// The web page of the product is pushed.
+                Navigator.push(
+                  context,
+                  SlideLeftRoute(
+                    page: BuyPage(
+                      productUrl: widget.productUrl,
+                      productName: widget.productName,
                     ),
                   ),
+                ).then(
+                  /// Video is played after the web page is popped.
+                  (val) {
+                    if (val == false) {
+                      _videoController.play();
+                    }
+                  },
+                );
+              },
+
+              /// Text content inside button.
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Shop Now / ' +
+                        widget.currency +
+                        widget.priceBig +
+                        widget.priceSmall,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: Colors.white,
+                  ),
+                ],
+              ),
+
+              /// Styling of button.
+              style: ButtonStyle(
+                shape: MaterialStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
-              ],
+                backgroundColor: MaterialStateProperty.all(
+                  Colors.black,
+                ),
+              ),
             ),
           ),
         ),
@@ -512,4 +461,30 @@ class _HomeContentState extends State<HomeContent> {
           )
         : Container();
   }
+}
+
+/// Page Navigation Animation.
+class SlideLeftRoute extends PageRouteBuilder {
+  final Widget page;
+  SlideLeftRoute({required this.page})
+      : super(
+          pageBuilder: (
+            BuildContext context,
+            Animation<double> animation,
+            Animation<double> secondaryAnimation,
+          ) =>
+              page,
+          transitionsBuilder: (
+            BuildContext context,
+            Animation<double> animation,
+            Animation<double> secondaryAnimation,
+            Widget child,
+          ) =>
+              SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child),
+        );
 }
