@@ -3,6 +3,7 @@ import 'package:video_player/video_player.dart';
 import 'product_data.dart';
 import 'buy_page.dart';
 import 'package:visibility_detector/visibility_detector.dart';
+import 'package:expandable_text/expandable_text.dart';
 
 class HomeContent extends StatefulWidget {
   final int index;
@@ -64,7 +65,6 @@ class _HomeContentState extends State<HomeContent> {
     _isSaved = widget.isSaved;
     _videoController = VideoPlayerController.asset(widget.videoUrl);
     _videoController.initialize().then((value) {
-      // _videoController.play();
       _videoController.setLooping(true);
       setState(() {
         isShowPlaying = false;
@@ -96,8 +96,14 @@ class _HomeContentState extends State<HomeContent> {
           /// The video player.
           videoPlayer(),
 
+          /// To improve visibility on case any buttons or text needed to be added on top.
+          // topShadowLayer(),
+
           /// Shadow layer to improve bottom text visibility.
-          shadowLayer(),
+          bottomShadowLayer(),
+
+          /// Gesture Detector to identify inputs.
+          tapDetector(),
 
           /// The overlay that displays all the product info.
           informationOverlay(),
@@ -113,41 +119,81 @@ class _HomeContentState extends State<HomeContent> {
     return VideoPlayer(_videoController);
   }
 
-  /// Shadow layer.
-  Widget shadowLayer() {
-    return Column(
-      children: [
-        Expanded(
-          flex: 2,
-          child: Container(),
+  /// Top Shadow layer.
+  Widget topShadowLayer() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.black.withOpacity(0.3),
+            Colors.transparent,
+          ],
+          begin: const Alignment(0, -0.75),
+          end: const Alignment(0, 0.1),
         ),
-        Expanded(
-          flex: 8,
-          child: Container(),
+      ),
+    );
+  }
+
+  /// Bottom Shadow layer.
+  Widget bottomShadowLayer() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.black.withOpacity(0.3),
+            Colors.transparent,
+          ],
+          end: const Alignment(0, -0.75),
+          begin: const Alignment(0, 0.1),
         ),
-        Expanded(
-          flex: 9,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withOpacity(0),
-                  Colors.black.withOpacity(0.35)
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
+      ),
+    );
+  }
+
+  /// Gesture Detector.
+  Widget tapDetector() {
+    return GestureDetector(
+      ///Single tap - Pause/Play Video.
+      onTap: () {
+        setState(() {
+          _videoController.value.isPlaying
+              ? _videoController.pause()
+              : _videoController.play();
+          showPlayPauseIcon
+              ? showPlayPauseIcon = false
+              : showPlayPauseIcon = true;
+        });
+        Future.delayed(
+          const Duration(milliseconds: 800),
+          () {
+            setState(
+              () {
+                showPlayPauseIcon = false;
+              },
+            );
+          },
+        );
+      },
+
+      /// Double tap - Like/Unlike Video.
+      onDoubleTap: () {
+        if (!_isLiked) {
+          setState(() {
+            /// Local variable is updated.
+            _isLiked = true;
+
+            /// The change is also made in the product data list by directly accessing it.
+            productData[widget.index]['isLiked'] = true;
+          });
+        }
+      },
     );
   }
 
   /// Information Overlay.
   Widget informationOverlay() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ///1. Top Bar (ratio : 1) - place holder.
         Expanded(
@@ -155,49 +201,75 @@ class _HomeContentState extends State<HomeContent> {
           child: Container(),
         ),
 
-        ///2. Middle Cluster (ratio : 10) - Main Panel, Ratings Tab. (10 : 2)
+        ///2. Middle Cluster (ratio : 10) - Product name & description Panel, Ratings Tab. (8 : 2)
         Expanded(
           flex: 10,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              ///2.1 Main Panel (ratio : 10) - Tap Area, Product name & description Panel (10 : 2).
-              Expanded(
-                flex: 10,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    ///2.1.1 Tap Area (ratio : 10).
-                    Expanded(
-                      flex: 20,
-                      child: Container(
-                        // color: Colors.red,
-                        child: GestureDetector(
-                          ///Single tap - Pause/Play Video.
-                          onTap: () {
-                            setState(() {
-                              _videoController.value.isPlaying
-                                  ? _videoController.pause()
-                                  : _videoController.play();
-                              showPlayPauseIcon
-                                  ? showPlayPauseIcon = false
-                                  : showPlayPauseIcon = true;
-                            });
-                            Future.delayed(
-                              const Duration(milliseconds: 800),
-                              () {
-                                setState(
-                                  () {
-                                    showPlayPauseIcon = false;
-                                  },
-                                );
-                              },
-                            );
-                          },
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ///2.1 Product name & description Panel (ratio : 8).
+                  Flexible(
+                    flex: 10,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          /// Product Name.
+                          Text(
+                            widget.productName,
+                            softWrap: false,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
 
-                          /// Double tap - Like/Unlike Video.
-                          onDoubleTap: () {
-                            if (!_isLiked) {
+                          /// Product Description.
+                          ExpandableText(
+                            widget.productDescription,
+                            expandText: ' ',
+                            expandOnTextTap: true,
+                            collapseOnTextTap: true,
+                            maxLines: 1,
+                            linkColor: Colors.white,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.normal,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  ///2.2 Ratings Tab (ratio : 2).
+                  Flexible(
+                    flex: 2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        /// 1. Like button tap area - single tap to like.
+                        GestureDetector(
+                          onTap: () {
+                            if (_isLiked) {
+                              setState(() {
+                                /// Local variable is updated.
+                                _isLiked = false;
+
+                                /// The change is also made in the product data list by directly accessing it.
+                                productData[widget.index]['isLiked'] = false;
+                              });
+                            } else {
                               setState(() {
                                 /// Local variable is updated.
                                 _isLiked = true;
@@ -207,168 +279,107 @@ class _HomeContentState extends State<HomeContent> {
                               });
                             }
                           },
+                          child: _isLiked
+                              ? const Icon(
+                                  Icons.favorite_rounded,
+                                  size: 35,
+                                  color: Colors.red,
+                                )
+                              : const Icon(
+                                  Icons.favorite_border_rounded,
+                                  // Icons.favorite_rounded,
+                                  size: 35,
+                                  color: Colors.white,
+                                  // color: Colors.pink,
+                                ),
                         ),
-                      ),
-                    ),
-
-                    ///2.1.2 Product name & description Panel (ratio : 2).
-                    Expanded(
-                      flex: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            /// Product Name.
-                            Text(
-                              widget.productName,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
+                        const SizedBox(height: 2),
+                        Center(
+                          child: Text(
+                            widget.likes,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
                             ),
-                            const SizedBox(height: 5),
-
-                            /// Product Description.
-                            Text(
-                              widget.productDescription,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                        const SizedBox(height: 20),
 
-              ///2.2 Ratings Tab (ratio : 2).
-              Expanded(
-                flex: 2,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    /// 1. Like button tap area - single tap to like.
-                    GestureDetector(
-                      onTap: () {
-                        if (_isLiked) {
-                          setState(() {
-                            /// Local variable is updated.
-                            _isLiked = false;
+                        /// 2. Save button tap area - single tap to save.
+                        GestureDetector(
+                          onTap: () {
+                            if (_isSaved) {
+                              setState(() {
+                                /// Local variable is updated.
+                                _isSaved = false;
 
-                            /// The change is also made in the product data list by directly accessing it.
-                            productData[widget.index]['isLiked'] = false;
-                          });
-                        } else {
-                          setState(() {
-                            /// Local variable is updated.
-                            _isLiked = true;
+                                /// The change is also made in the product data list by directly accessing it.
+                                productData[widget.index]['isSaved'] = false;
+                              });
+                            } else {
+                              setState(() {
+                                /// Local variable is updated.
+                                _isSaved = true;
 
-                            /// The change is also made in the product data list by directly accessing it.
-                            productData[widget.index]['isLiked'] = true;
-                          });
-                        }
-                      },
-                      child: _isLiked
-                          ? const Icon(
-                              Icons.favorite_rounded,
-                              size: 35,
-                              color: Colors.red,
-                            )
-                          : const Icon(
-                              Icons.favorite_border_rounded,
-                              // Icons.favorite_rounded,
-                              size: 35,
+                                /// The change is also made in the product data list by directly accessing it.
+                                productData[widget.index]['isSaved'] = true;
+                              });
+                            }
+                          },
+                          child: _isSaved
+                              ? const Icon(
+                                  Icons.bookmark_rounded,
+                                  size: 35,
+                                  color: Colors.white,
+                                )
+                              : const Icon(
+                                  Icons.bookmark_border_rounded,
+                                  size: 35,
+                                  color: Colors.white,
+                                ),
+                        ),
+                        const SizedBox(height: 2),
+                        Center(
+                          child: Text(
+                            widget.saves,
+                            style: const TextStyle(
                               color: Colors.white,
-                              // color: Colors.pink,
+                              fontSize: 13,
                             ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      widget.likes,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
 
-                    /// 2. Save button tap area - single tap to save.
-                    GestureDetector(
-                      onTap: () {
-                        if (_isSaved) {
-                          setState(() {
-                            /// Local variable is updated.
-                            _isSaved = false;
-
-                            /// The change is also made in the product data list by directly accessing it.
-                            productData[widget.index]['isSaved'] = false;
-                          });
-                        } else {
-                          setState(() {
-                            /// Local variable is updated.
-                            _isSaved = true;
-
-                            /// The change is also made in the product data list by directly accessing it.
-                            productData[widget.index]['isSaved'] = true;
-                          });
-                        }
-                      },
-                      child: _isSaved
-                          ? const Icon(
-                              Icons.bookmark_rounded,
-                              size: 35,
+                        /// 3. Implement Share button tap area - single tap to share.
+                        const Icon(
+                          Icons.share_rounded,
+                          size: 35,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(height: 2),
+                        Center(
+                          child: Text(
+                            widget.shares,
+                            style: const TextStyle(
                               color: Colors.white,
-                            )
-                          : const Icon(
-                              Icons.bookmark_border_rounded,
-                              size: 35,
-                              color: Colors.white,
+                              fontSize: 13,
                             ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      widget.saves,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
 
-                    //TODO: 3. Implement Share button tap area - single tap to share.
-                    const Icon(
-                      Icons.share_rounded,
-                      size: 35,
-                      color: Colors.white,
+                        /// 4. Implement Options button tap area - single tap to open options.
+                        const Icon(
+                          Icons.more_horiz_rounded,
+                          size: 35,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(height: 10),
+                      ],
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      widget.shares,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    //TODO: 4. Implement Options button tap area - single tap to open options.
-                    const Icon(
-                      Icons.more_horiz_rounded,
-                      size: 35,
-                      color: Colors.white,
-                    ),
-                    const SizedBox(height: 10),
-                  ],
-                ),
-              ),
+                  )
+                ],
+              )
             ],
           ),
         ),
@@ -412,6 +423,8 @@ class _HomeContentState extends State<HomeContent> {
                         widget.currency +
                         widget.priceBig +
                         widget.priceSmall,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 15,

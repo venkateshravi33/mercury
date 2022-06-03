@@ -13,12 +13,15 @@ class BuyPage extends StatefulWidget {
 }
 
 class _BuyPageState extends State<BuyPage> {
+  bool isLoading = true;
+  double loadingProgress = 0;
   late WebViewController myWebViewController;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
         leading: IconButton(
           icon: const Icon(
             Icons.chevron_left_rounded,
@@ -33,12 +36,34 @@ class _BuyPageState extends State<BuyPage> {
           style: const TextStyle(fontSize: 20, color: Colors.white),
         ),
       ),
-      body: WebView(
-        javascriptMode: JavascriptMode.unrestricted,
-        initialUrl: widget.productUrl,
-        onWebViewCreated: (controller) {
-          myWebViewController = controller;
-        },
+      body: Stack(
+        children: [
+          WebView(
+            javascriptMode: JavascriptMode.unrestricted,
+            initialUrl: widget.productUrl,
+            onWebViewCreated: (controller) {
+              myWebViewController = controller;
+            },
+            onPageFinished: (finish) {
+              setState(() {
+                isLoading = false;
+              });
+            },
+            onProgress: (value) {
+              setState(() {
+                loadingProgress = value.toDouble();
+              });
+            },
+          ),
+          isLoading
+              ? LinearProgressIndicator(
+                  minHeight: 2,
+                  backgroundColor: Colors.grey,
+                  valueColor: const AlwaysStoppedAnimation(Colors.white),
+                  value: (loadingProgress * 0.01),
+                )
+              : Stack(),
+        ],
       ),
     );
   }
