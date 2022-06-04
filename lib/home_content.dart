@@ -16,13 +16,13 @@ class HomeContent extends StatefulWidget {
   final String currency;
   final String priceBig;
   final String priceSmall;
-  final String shipping;
-  final String taxes;
-  final bool isLiked;
   final String likes;
-  final bool isSaved;
   final String saves;
   final String shares;
+  final bool isLiked;
+  final bool isSaved;
+  final bool isDisliked;
+  final bool isReported;
 
   const HomeContent({
     Key? key,
@@ -34,13 +34,13 @@ class HomeContent extends StatefulWidget {
     required this.currency,
     required this.priceBig,
     required this.priceSmall,
-    required this.shipping,
-    required this.taxes,
-    required this.isLiked,
     required this.likes,
-    required this.isSaved,
     required this.saves,
     required this.shares,
+    required this.isLiked,
+    required this.isSaved,
+    required this.isDisliked,
+    required this.isReported,
   }) : super(key: key);
 
   @override
@@ -239,6 +239,9 @@ class _HomeContentState extends State<HomeContent> {
                           /// Product Description.
                           ExpandableText(
                             widget.productDescription,
+                            animation: true,
+                            animationDuration:
+                                const Duration(milliseconds: 500),
                             expandText: ' ',
                             expandOnTextTap: true,
                             collapseOnTextTap: true,
@@ -488,24 +491,36 @@ class _HomeContentState extends State<HomeContent> {
           builder: (context) {
             return Wrap(
               spacing: 10,
-              children: const [
+              children: [
                 ListTile(
+                  onTap: () {
+                    // showDialog(
+                    //   context: context,
+                    //   builder: (context) {
+                    //     Future.delayed(
+                    //       const Duration(seconds: 1),
+                    //       () {
+                    //         Navigator.of(context).pop(true);
+                    //         Navigator.of(context).pop(true);
+                    //       },
+                    //     );
+                    //     return Container(
+                    //       color: Colors.red,
+                    //     );
+                    //   },
+                    // );
+                  },
                   iconColor: Colors.white,
                   textColor: Colors.white,
-                  leading: Icon(Icons.copy),
-                  title: Text('Copy Link'),
+                  leading: const Icon(Icons.thumb_down_outlined),
+                  title: const Text('Dislike'),
                 ),
                 ListTile(
+                  onTap: () {},
                   iconColor: Colors.white,
                   textColor: Colors.white,
-                  leading: Icon(Icons.thumb_down_outlined),
-                  title: Text('Dislike'),
-                ),
-                ListTile(
-                  iconColor: Colors.white,
-                  textColor: Colors.white,
-                  leading: Icon(Icons.flag_outlined),
-                  title: Text('Report'),
+                  leading: const Icon(Icons.flag_outlined),
+                  title: const Text('Report'),
                 ),
               ],
             );
