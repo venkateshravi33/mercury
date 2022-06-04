@@ -57,9 +57,9 @@ class _BuyPageState extends State<BuyPage> {
           ),
           isLoading
               ? LinearProgressIndicator(
-                  minHeight: 2,
+                  minHeight: 3,
                   backgroundColor: Colors.grey,
-                  valueColor: const AlwaysStoppedAnimation(Colors.white),
+                  valueColor: const AlwaysStoppedAnimation(Colors.blueAccent),
                   value: (loadingProgress * 0.01),
                 )
               : Stack(),

@@ -4,6 +4,8 @@ import 'product_data.dart';
 import 'buy_page.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:expandable_text/expandable_text.dart';
+import 'custom_icons_icons.dart';
+import 'package:share_plus/share_plus.dart';
 
 class HomeContent extends StatefulWidget {
   final int index;
@@ -231,6 +233,7 @@ class _HomeContentState extends State<HomeContent> {
                               color: Colors.white,
                             ),
                           ),
+
                           const SizedBox(height: 5),
 
                           /// Product Description.
@@ -259,40 +262,7 @@ class _HomeContentState extends State<HomeContent> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         /// 1. Like button tap area - single tap to like.
-                        GestureDetector(
-                          onTap: () {
-                            if (_isLiked) {
-                              setState(() {
-                                /// Local variable is updated.
-                                _isLiked = false;
-
-                                /// The change is also made in the product data list by directly accessing it.
-                                productData[widget.index]['isLiked'] = false;
-                              });
-                            } else {
-                              setState(() {
-                                /// Local variable is updated.
-                                _isLiked = true;
-
-                                /// The change is also made in the product data list by directly accessing it.
-                                productData[widget.index]['isLiked'] = true;
-                              });
-                            }
-                          },
-                          child: _isLiked
-                              ? const Icon(
-                                  Icons.favorite_rounded,
-                                  size: 35,
-                                  color: Colors.red,
-                                )
-                              : const Icon(
-                                  Icons.favorite_border_rounded,
-                                  // Icons.favorite_rounded,
-                                  size: 35,
-                                  color: Colors.white,
-                                  // color: Colors.pink,
-                                ),
-                        ),
+                        likeButton(),
                         const SizedBox(height: 2),
                         Center(
                           child: Text(
@@ -306,38 +276,7 @@ class _HomeContentState extends State<HomeContent> {
                         const SizedBox(height: 20),
 
                         /// 2. Save button tap area - single tap to save.
-                        GestureDetector(
-                          onTap: () {
-                            if (_isSaved) {
-                              setState(() {
-                                /// Local variable is updated.
-                                _isSaved = false;
-
-                                /// The change is also made in the product data list by directly accessing it.
-                                productData[widget.index]['isSaved'] = false;
-                              });
-                            } else {
-                              setState(() {
-                                /// Local variable is updated.
-                                _isSaved = true;
-
-                                /// The change is also made in the product data list by directly accessing it.
-                                productData[widget.index]['isSaved'] = true;
-                              });
-                            }
-                          },
-                          child: _isSaved
-                              ? const Icon(
-                                  Icons.bookmark_rounded,
-                                  size: 35,
-                                  color: Colors.white,
-                                )
-                              : const Icon(
-                                  Icons.bookmark_border_rounded,
-                                  size: 35,
-                                  color: Colors.white,
-                                ),
-                        ),
+                        saveButton(),
                         const SizedBox(height: 2),
                         Center(
                           child: Text(
@@ -351,11 +290,7 @@ class _HomeContentState extends State<HomeContent> {
                         const SizedBox(height: 20),
 
                         /// 3. Implement Share button tap area - single tap to share.
-                        const Icon(
-                          Icons.share_rounded,
-                          size: 35,
-                          color: Colors.white,
-                        ),
+                        shareButton(),
                         const SizedBox(height: 2),
                         Center(
                           child: Text(
@@ -369,11 +304,7 @@ class _HomeContentState extends State<HomeContent> {
                         const SizedBox(height: 20),
 
                         /// 4. Implement Options button tap area - single tap to open options.
-                        const Icon(
-                          Icons.more_horiz_rounded,
-                          size: 35,
-                          color: Colors.white,
-                        ),
+                        optionsButton(),
                         const SizedBox(height: 10),
                       ],
                     ),
@@ -453,6 +384,139 @@ class _HomeContentState extends State<HomeContent> {
           ),
         ),
       ],
+    );
+  }
+
+  /// Like Button.
+  Widget likeButton() {
+    return GestureDetector(
+      onTap: () {
+        if (_isLiked) {
+          setState(() {
+            /// Local variable is updated.
+            _isLiked = false;
+
+            /// The change is also made in the product data list by directly accessing it.
+            productData[widget.index]['isLiked'] = false;
+          });
+        } else {
+          setState(() {
+            /// Local variable is updated.
+            _isLiked = true;
+
+            /// The change is also made in the product data list by directly accessing it.
+            productData[widget.index]['isLiked'] = true;
+          });
+        }
+      },
+      child: _isLiked
+          ? const Icon(
+              Icons.favorite,
+              size: 35,
+              color: Colors.red,
+            )
+          : const Icon(
+              Icons.favorite_border,
+              // Icons.favorite_rounded,
+              size: 35,
+              color: Colors.white,
+              // color: Colors.pink,
+            ),
+    );
+  }
+
+  /// Save Button
+  Widget saveButton() {
+    return GestureDetector(
+      onTap: () {
+        if (_isSaved) {
+          setState(() {
+            /// Local variable is updated.
+            _isSaved = false;
+
+            /// The change is also made in the product data list by directly accessing it.
+            productData[widget.index]['isSaved'] = false;
+          });
+        } else {
+          setState(() {
+            /// Local variable is updated.
+            _isSaved = true;
+
+            /// The change is also made in the product data list by directly accessing it.
+            productData[widget.index]['isSaved'] = true;
+          });
+        }
+      },
+      child: _isSaved
+          ? const Icon(
+              Icons.bookmark,
+              size: 35,
+              color: Colors.white,
+            )
+          : const Icon(
+              Icons.bookmark_border,
+              size: 35,
+              color: Colors.white,
+            ),
+    );
+  }
+
+  /// Share Button
+  Widget shareButton() {
+    return GestureDetector(
+      onTap: () {
+        Share.share(widget.productUrl);
+      },
+      child: const Icon(
+        CustomIcons.share_hollow,
+        size: 30,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  /// Options Button
+  Widget optionsButton() {
+    return GestureDetector(
+      onTap: () {
+        showModalBottomSheet(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          backgroundColor: Colors.grey[900],
+          context: context,
+          builder: (context) {
+            return Wrap(
+              spacing: 10,
+              children: const [
+                ListTile(
+                  iconColor: Colors.white,
+                  textColor: Colors.white,
+                  leading: Icon(Icons.copy),
+                  title: Text('Copy Link'),
+                ),
+                ListTile(
+                  iconColor: Colors.white,
+                  textColor: Colors.white,
+                  leading: Icon(Icons.thumb_down_outlined),
+                  title: Text('Dislike'),
+                ),
+                ListTile(
+                  iconColor: Colors.white,
+                  textColor: Colors.white,
+                  leading: Icon(Icons.flag_outlined),
+                  title: Text('Report'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+      child: const Icon(
+        Icons.more_horiz_rounded,
+        size: 35,
+        color: Colors.white,
+      ),
     );
   }
 
