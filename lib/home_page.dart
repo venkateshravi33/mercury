@@ -27,8 +27,6 @@ class HomePage extends StatelessWidget {
           shares: productData[index]['shares'],
           isLiked: productData[index]['isLiked'],
           isSaved: productData[index]['isSaved'],
-          isDisliked: productData[index]['isDisliked'],
-          isReported: productData[index]['isReported'],
         );
       },
       itemCount: productData.length,

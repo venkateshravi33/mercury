@@ -39,6 +39,7 @@ dependencies:
   visibility_detector: ^0.3.3
   expandable_text: ^2.3.0
   share_plus: ^4.0.6
+  firebase_core: ^1.17.1
 
 dev_dependencies:
   flutter_test:

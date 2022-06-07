@@ -21,8 +21,6 @@ class HomeContent extends StatefulWidget {
   final String shares;
   final bool isLiked;
   final bool isSaved;
-  final bool isDisliked;
-  final bool isReported;
 
   const HomeContent({
     Key? key,
@@ -39,8 +37,6 @@ class HomeContent extends StatefulWidget {
     required this.shares,
     required this.isLiked,
     required this.isSaved,
-    required this.isDisliked,
-    required this.isReported,
   }) : super(key: key);
 
   @override
@@ -214,7 +210,7 @@ class _HomeContentState extends State<HomeContent> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   ///2.1 Product name & description Panel (ratio : 8).
-                  Flexible(
+                  Expanded(
                     flex: 10,
                     child: Padding(
                       padding: const EdgeInsets.only(left: 8),
@@ -259,7 +255,7 @@ class _HomeContentState extends State<HomeContent> {
                   ),
 
                   ///2.2 Ratings Tab (ratio : 2).
-                  Flexible(
+                  Expanded(
                     flex: 2,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -313,7 +309,7 @@ class _HomeContentState extends State<HomeContent> {
                     ),
                   )
                 ],
-              )
+              ),
             ],
           ),
         ),
@@ -468,6 +464,8 @@ class _HomeContentState extends State<HomeContent> {
   Widget shareButton() {
     return GestureDetector(
       onTap: () {
+        /// The Shared change is also made in the product data list by directly accessing it.
+        productData[widget.index]['isShared'] = true;
         Share.share(widget.productUrl);
       },
       child: const Icon(
@@ -494,21 +492,47 @@ class _HomeContentState extends State<HomeContent> {
               children: [
                 ListTile(
                   onTap: () {
-                    // showDialog(
-                    //   context: context,
-                    //   builder: (context) {
-                    //     Future.delayed(
-                    //       const Duration(seconds: 1),
-                    //       () {
-                    //         Navigator.of(context).pop(true);
-                    //         Navigator.of(context).pop(true);
-                    //       },
-                    //     );
-                    //     return Container(
-                    //       color: Colors.red,
-                    //     );
-                    //   },
-                    // );
+                    setState(() {
+                      /// The Dislike change is also made in the product data list by directly accessing it.
+                      productData[widget.index]['isDisliked'] = true;
+                    });
+                    Navigator.of(context).pop(true);
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        Future.delayed(
+                          const Duration(milliseconds: 600),
+                          () {
+                            Navigator.of(context).pop(true);
+                          },
+                        );
+                        return AlertDialog(
+                          elevation: 0,
+                          backgroundColor: Colors.transparent,
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                  color: Colors.black.withOpacity(0.7),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 15, vertical: 20),
+                                  child: const Text(
+                                    "Video Disliked",
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
                   },
                   iconColor: Colors.white,
                   textColor: Colors.white,
@@ -516,7 +540,47 @@ class _HomeContentState extends State<HomeContent> {
                   title: const Text('Dislike'),
                 ),
                 ListTile(
-                  onTap: () {},
+                  onTap: () {
+                    /// The Reported change is also made in the product data list by directly accessing it.
+                    productData[widget.index]['isReported'] = true;
+                    Navigator.of(context).pop(true);
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        Future.delayed(
+                          const Duration(milliseconds: 600),
+                          () {
+                            Navigator.of(context).pop(true);
+                          },
+                        );
+                        return AlertDialog(
+                          elevation: 0,
+                          backgroundColor: Colors.transparent,
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                  color: Colors.black.withOpacity(0.7),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 15, vertical: 20),
+                                  child: const Text(
+                                    "Video Reported",
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
                   iconColor: Colors.white,
                   textColor: Colors.white,
                   leading: const Icon(Icons.flag_outlined),
@@ -540,15 +604,27 @@ class _HomeContentState extends State<HomeContent> {
     return showPlayPauseIcon
         ? Center(
             child: _videoController.value.isPlaying && !isShowPlaying
-                ? Icon(
-                    Icons.play_arrow_rounded,
-                    size: 100,
-                    color: Colors.white.withOpacity(0.75),
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(50),
+                    child: Container(
+                      color: Colors.black.withOpacity(0.5),
+                      child: Icon(
+                        Icons.play_arrow_rounded,
+                        size: 100,
+                        color: Colors.white.withOpacity(0.75),
+                      ),
+                    ),
                   )
-                : Icon(
-                    Icons.pause_rounded,
-                    size: 100,
-                    color: Colors.white.withOpacity(0.75),
+                : ClipRRect(
+                    borderRadius: BorderRadius.circular(100),
+                    child: Container(
+                      color: Colors.black.withOpacity(0.5),
+                      child: Icon(
+                        Icons.pause,
+                        size: 100,
+                        color: Colors.white.withOpacity(0.75),
+                      ),
+                    ),
                   ),
           )
         : Container();
