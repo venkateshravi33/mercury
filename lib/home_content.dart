@@ -37,8 +37,7 @@ class HomeContent extends StatefulWidget {
 
 class _HomeContentState extends State<HomeContent> {
   late VideoPlayerController _videoController;
-  bool isShowPlaying = false;
-  bool showPlayPauseIcon = false;
+  bool showPlayIcon = false;
 
   /// Two local variables are created to store the passed down value.
   /// These variable cannot directly update values in the product data list.
@@ -55,8 +54,7 @@ class _HomeContentState extends State<HomeContent> {
     _videoController.initialize().then((value) {
       _videoController.setLooping(true);
       setState(() {
-        isShowPlaying = false;
-        showPlayPauseIcon = false;
+        showPlayIcon = false;
       });
     });
   }
@@ -99,7 +97,7 @@ class _HomeContentState extends State<HomeContent> {
           informationOverlay(),
 
           ///Play/Pause Icon.
-          // playPauseIcon(),
+          playIcon(),
         ],
       ),
     );
@@ -107,7 +105,10 @@ class _HomeContentState extends State<HomeContent> {
 
   /// Video Player.
   Widget videoPlayer() {
-    return VideoPlayer(_videoController);
+    return Container(
+      color: Colors.black,
+      child: VideoPlayer(_videoController),
+    );
   }
 
   /// Loading screen until the video is initialised.
@@ -160,23 +161,14 @@ class _HomeContentState extends State<HomeContent> {
       ///Single tap - Pause/Play Video.
       onTap: () {
         setState(() {
-          _videoController.value.isPlaying
-              ? _videoController.pause()
-              : _videoController.play();
-          showPlayPauseIcon
-              ? showPlayPauseIcon = false
-              : showPlayPauseIcon = true;
+          if (_videoController.value.isPlaying) {
+            _videoController.pause();
+            showPlayIcon = true;
+          } else {
+            _videoController.play();
+            showPlayIcon = false;
+          }
         });
-        Future.delayed(
-          const Duration(milliseconds: 800),
-          () {
-            setState(
-              () {
-                showPlayPauseIcon = false;
-              },
-            );
-          },
-        );
       },
 
       /// Double tap - Like/Unlike Video.
@@ -602,35 +594,23 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   /// Play Pause Icon.
-  // Widget playPauseIcon() {
-  //   return showPlayPauseIcon
-  //       ? Center(
-  //           child: _videoController.value.isPlaying && !isShowPlaying
-  //               ? ClipRRect(
-  //                   borderRadius: BorderRadius.circular(50),
-  //                   child: Container(
-  //                     color: Colors.black.withOpacity(0.5),
-  //                     child: Icon(
-  //                       Icons.play_arrow_rounded,
-  //                       size: 100,
-  //                       color: Colors.white.withOpacity(0.75),
-  //                     ),
-  //                   ),
-  //                 )
-  //               : ClipRRect(
-  //                   borderRadius: BorderRadius.circular(100),
-  //                   child: Container(
-  //                     color: Colors.black.withOpacity(0.5),
-  //                     child: Icon(
-  //                       Icons.pause,
-  //                       size: 100,
-  //                       color: Colors.white.withOpacity(0.75),
-  //                     ),
-  //                   ),
-  //                 ),
-  //         )
-  //       : Container();
-  // }
+  Widget playIcon() {
+    return showPlayIcon
+        ? Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(50),
+              child: Container(
+                color: Colors.black.withOpacity(0.77),
+                child: const Icon(
+                  Icons.play_arrow_rounded,
+                  size: 85,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          )
+        : Container();
+  }
 }
 
 /// Page Navigation Animation.

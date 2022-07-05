@@ -7,9 +7,12 @@ import 'home_content.dart';
 class HomePage extends StatelessWidget {
   HomePage({Key? key}) : super(key: key);
 
-  // TODO: Implement Pagination.
+  // // TODO: Implement Pagination.
+  // final Stream<QuerySnapshot> products =
+  //     FirebaseFirestore.instance.collection('products').limit(1).snapshots();
+
   final Stream<QuerySnapshot> products =
-      FirebaseFirestore.instance.collection('products').limit(1).snapshots();
+      FirebaseFirestore.instance.collection('products').snapshots();
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +39,7 @@ class HomePage extends StatelessWidget {
         }
         final data = snapshot.requireData;
 
-// TODO: Implement video pre-loading.
+        // TODO: Implement video pre-loading.
         return PageView.builder(
           controller: pgController,
           scrollDirection: Axis.vertical,
