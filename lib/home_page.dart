@@ -8,9 +8,6 @@ class HomePage extends StatelessWidget {
   HomePage({Key? key}) : super(key: key);
 
   // // TODO: Implement Pagination.
-  // final Stream<QuerySnapshot> products =
-  //     FirebaseFirestore.instance.collection('products').limit(1).snapshots();
-
   final Stream<QuerySnapshot> products =
       FirebaseFirestore.instance.collection('products').snapshots();
 
@@ -41,6 +38,7 @@ class HomePage extends StatelessWidget {
 
         // TODO: Implement video pre-loading.
         return PreloadPageView.builder(
+          preloadPagesCount: 3,
           controller: pgController,
           scrollDirection: Axis.vertical,
           itemCount: data.size,
