@@ -6,6 +6,7 @@ import 'package:expandable_text/expandable_text.dart';
 import 'custom_icons_icons.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:numeral/numeral.dart';
+import 'package:random_string/random_string.dart';
 
 class HomeContent extends StatefulWidget {
   final String videoUrl;
@@ -37,6 +38,7 @@ class HomeContent extends StatefulWidget {
 
 class _HomeContentState extends State<HomeContent> {
   late VideoPlayerController _videoController;
+  late String key = 'temp';
   bool showPlayIcon = false;
 
   /// Two local variables are created to store the passed down value.
@@ -53,30 +55,36 @@ class _HomeContentState extends State<HomeContent> {
     _videoController = VideoPlayerController.network(widget.videoUrl);
     _videoController.initialize().then((value) {
       _videoController.setLooping(true);
-      setState(() {
-        showPlayIcon = false;
-      });
+      if (mounted) {
+        setState(() {
+          key = randomAlphaNumeric(10);
+          showPlayIcon = false;
+        });
+      }
     });
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
-    super.dispose();
     _videoController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return VisibilityDetector(
-      onVisibilityChanged: (VisibilityInfo info) {
-        if (info.visibleFraction == 1) {
+      onVisibilityChanged: (VisibilityInfo visibilityInfo) {
+        if (visibilityInfo.visibleFraction == 1) {
           _videoController.play();
-        } else if (info.visibleFraction == 0) {
+        } else if (visibilityInfo.visibleFraction == 0) {
           _videoController.pause();
+          setState(() {
+            showPlayIcon = false;
+          });
         }
       },
-      key: const Key('unique key'),
+      key: Key(key),
       child: Stack(
         children: [
           /// The video player.
@@ -90,14 +98,14 @@ class _HomeContentState extends State<HomeContent> {
           /// Shadow layer to improve bottom text visibility.
           bottomShadowLayer(),
 
+          ///Play/Pause Icon.
+          playIcon(),
+
           /// Gesture Detector to identify inputs.
           tapDetector(),
 
           /// The overlay that displays all the product info.
           informationOverlay(),
-
-          ///Play/Pause Icon.
-          playIcon(),
         ],
       ),
     );

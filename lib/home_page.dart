@@ -16,7 +16,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final PageController pgController = PageController();
+    final PreloadPageController pgController = PreloadPageController();
 
     return StreamBuilder<QuerySnapshot>(
       stream: products,
@@ -40,7 +40,7 @@ class HomePage extends StatelessWidget {
         final data = snapshot.requireData;
 
         // TODO: Implement video pre-loading.
-        return PageView.builder(
+        return PreloadPageView.builder(
           controller: pgController,
           scrollDirection: Axis.vertical,
           itemCount: data.size,
